@@ -879,8 +879,8 @@ function fmtVal(v) {
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   const rows = filtered.slice(0, 500);
-  tbody.innerHTML = rows.map(r => `
-    <tr class="clickable" onclick="openClientPanel(${JSON.stringify(r).replace(/`/g,chr96)})">
+  tbody.innerHTML = rows.map((r,i) => `
+    <tr class="clickable" data-idx="${i}">
       <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.cliente}</td>
       <td>${r.ultima_data}</td>
       <td style="text-align:right">${r.recencia.toLocaleString('pt-BR')}</td>
@@ -1149,9 +1149,6 @@ function buildCancelCharts() {
   document.getElementById('logout-btn').addEventListener('click', logout);
 })();
 
-// ── Helper
-const chr96 = String.fromCharCode(96);
-
 // ── Client Detail Panel ──────────────────────────────────────
 let _cpChart = null;
 function openClientPanel(r) {
@@ -1206,6 +1203,14 @@ function closeClientPanel() {
 }
 document.getElementById('cpanel-close').addEventListener('click', closeClientPanel);
 document.getElementById('cpanel-overlay').addEventListener('click', closeClientPanel);
+
+// Event delegation for clickable table rows (avoids JSON-in-HTML escaping issue)
+document.getElementById('tableBody').addEventListener('click', function(e) {
+  const tr = e.target.closest('tr[data-idx]');
+  if (!tr) return;
+  const idx = parseInt(tr.dataset.idx);
+  if (!isNaN(idx) && filtered[idx]) openClientPanel(filtered[idx]);
+});
 
 // ── Análise Avançada Charts ───────────────────────────────────
 function buildAnaliseCharts() {
