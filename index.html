@@ -62,6 +62,7 @@
     <button class="tab-btn" id="btn-analise" onclick="switchTab('analise')">Análise Avançada</button>
   <button class="tab-btn" id="btn-cancelamentos" onclick="switchTab('cancelamentos')">Análise de Cancelamentos</button>
   <button class="tab-btn" id="btn-declinio" onclick="switchTab('declinio')">Análise de Declínios</button>
+  <button class="tab-btn" id="btn-gui" onclick="switchTab('gui')">Análise GUI</button>
   </div>
 
   <div id="tab-rfm" class="tab-panel active">
@@ -606,6 +607,70 @@
   <div class="footer">ForLith Systems &nbsp;·&nbsp; Análise de Declínios &nbsp;·&nbsp; Base: março/2026 &nbsp;·&nbsp; 566 clientes considerados</div>
 </div><!-- /tab-declinio -->
 
+<!-- ══════════════════════════════════════════ TAB: ANÁLISE GUI ══ -->
+<div id="tab-gui" class="tab-panel">
+  <div class="kpi-row">
+    <div class="kpi kpi-accent">
+      <div class="kpi-label">Clientes</div>
+      <div class="kpi-value" id="guiClientes" style="color:#4a9fd4">—</div>
+      <div class="kpi-sub">Clientes com contratos entre 2016 e 2025</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total de contratos</div>
+      <div class="kpi-value" id="guiTotal">—</div>
+      <div class="kpi-sub">Todos os status no período</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Contratos ganhos</div>
+      <div class="kpi-value" id="guiGanhos" style="color:#4a9fd4">—</div>
+      <div class="kpi-sub">OK Andamento + Encerrado</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Contratos perdidos</div>
+      <div class="kpi-value" id="guiPerdidos" style="color:#d95f5f">—</div>
+      <div class="kpi-sub">Cancelado + Declinamos + Perdemos</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-title">Clientes 2016-2025</div>
+    <div class="controls">
+      <input type="text" id="guiSearch" placeholder="🔍  Buscar cliente...">
+      <select id="guiFilter">
+        <option value="">Todos os clientes</option>
+        <option value="ganhos">Com contratos ganhos</option>
+        <option value="perdidos">Com contratos perdidos</option>
+        <option value="sem-ganhos">Sem contratos ganhos</option>
+        <option value="sem-perdidos">Sem contratos perdidos</option>
+      </select>
+      <select id="guiMinT">
+        <option value="">Qtd. contratos</option>
+        <option value="2">2 ou mais contratos</option>
+        <option value="3">3 ou mais contratos</option>
+        <option value="5">5 ou mais contratos</option>
+        <option value="10">10 ou mais contratos</option>
+        <option value="20">20 ou mais contratos</option>
+      </select>
+      <span class="count-info" id="guiCount">— clientes</span>
+    </div>
+    <div class="table-wrap" style="max-height:520px">
+      <table id="guiTable">
+        <thead>
+          <tr>
+            <th onclick="guiSortTable('c')">Cliente ↕</th>
+            <th onclick="guiSortTable('t')" style="text-align:center">Total de contratos ↕</th>
+            <th onclick="guiSortTable('g')" style="text-align:center;color:#4a9fd4">Contratos ganhos ↕</th>
+            <th onclick="guiSortTable('p')" style="text-align:center;color:#d95f5f">Contratos perdidos ↕</th>
+          </tr>
+        </thead>
+        <tbody id="guiTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">ForLith Systems &nbsp;·&nbsp; Análise GUI &nbsp;·&nbsp; Período: 2016 a 2025 &nbsp;·&nbsp; Base: março/2026</div>
+</div><!-- /tab-gui -->
+
 <!-- ── Análise Avançada ──────────────────────────── -->
 <div id="tab-analise" class="tab-panel">
 
@@ -712,6 +777,7 @@
 
 <script src="lib/chart.min.js"></script>
 <script src="js/data.js"></script>
+<script src="js/gui-data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
 </body>

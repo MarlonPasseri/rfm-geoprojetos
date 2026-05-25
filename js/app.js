@@ -242,6 +242,14 @@ function switchTab(name) {
     document.getElementById('declineYear').addEventListener('change', applyDeclineFilters);
     applyDeclineFilters();
   }
+  if (name === 'gui' && !window._guiReady) {
+    window._guiReady = true;
+    document.getElementById('guiSearch').addEventListener('input', applyGuiFilters);
+    document.getElementById('guiFilter').addEventListener('change', applyGuiFilters);
+    document.getElementById('guiMinT').addEventListener('change', applyGuiFilters);
+    buildGuiSummary();
+    applyGuiFilters();
+  }
 }
 
 // ── Cancelamentos charts (lazy — só renderiza quando a aba é aberta)
@@ -400,4 +408,67 @@ function declineSortTable(key) {
   if (declineSortKey === key) { declineSortDir *= -1; }
   else { declineSortKey = key; declineSortDir = (key === 'c') ? 1 : -1; }
   applyDeclineFilters();
+}
+
+// ── Análise GUI tab
+let guiFiltered = [...GUI_DATA];
+let guiSortKey = 't';
+let guiSortDir = -1;
+
+function guiEscape(value) {
+  return String(value).replace(/[&<>"']/g, function(ch) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
+function buildGuiSummary() {
+  document.getElementById('guiClientes').textContent = GUI_SUMMARY.clientes;
+  document.getElementById('guiTotal').textContent = GUI_SUMMARY.total;
+  document.getElementById('guiGanhos').textContent = GUI_SUMMARY.ganhos;
+  document.getElementById('guiPerdidos').textContent = GUI_SUMMARY.perdidos;
+}
+
+function renderGuiTable() {
+  const tbody = document.getElementById('guiTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = guiFiltered.map(function(r) {
+    return '<tr>' +
+      '<td style="font-weight:500;max-width:420px;overflow:hidden;text-overflow:ellipsis">' + guiEscape(r.c) + '</td>' +
+      '<td style="text-align:center;font-weight:700">' + r.t + '</td>' +
+      '<td style="text-align:center;font-weight:700;color:#4a9fd4">' + r.g + '</td>' +
+      '<td style="text-align:center;font-weight:700;color:#d95f5f">' + r.p + '</td>' +
+      '</tr>';
+  }).join('');
+  document.getElementById('guiCount').textContent = guiFiltered.length + ' clientes';
+}
+
+function applyGuiFilters() {
+  const search = (document.getElementById('guiSearch') ? document.getElementById('guiSearch').value : '').toLowerCase();
+  const filt = document.getElementById('guiFilter') ? document.getElementById('guiFilter').value : '';
+  const minT = parseInt(document.getElementById('guiMinT') ? document.getElementById('guiMinT').value : '') || 0;
+
+  guiFiltered = GUI_DATA.filter(function(r) {
+    if (search && r.c.toLowerCase().indexOf(search) === -1) return false;
+    if (filt === 'ganhos' && r.g === 0) return false;
+    if (filt === 'perdidos' && r.p === 0) return false;
+    if (filt === 'sem-ganhos' && r.g !== 0) return false;
+    if (filt === 'sem-perdidos' && r.p !== 0) return false;
+    if (minT > 0 && r.t < minT) return false;
+    return true;
+  });
+
+  const key = guiSortKey;
+  const dir = guiSortDir;
+  guiFiltered.sort(function(a, b) {
+    if (a[key] < b[key]) return dir;
+    if (a[key] > b[key]) return -dir;
+    return a.c.localeCompare(b.c);
+  });
+  renderGuiTable();
+}
+
+function guiSortTable(key) {
+  if (guiSortKey === key) { guiSortDir *= -1; }
+  else { guiSortKey = key; guiSortDir = (key === 'c') ? 1 : -1; }
+  applyGuiFilters();
 }
