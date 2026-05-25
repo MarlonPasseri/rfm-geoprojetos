@@ -1,0 +1,247 @@
+﻿(function () {
+  // ── User registry (username → SHA-256 of password)
+  // To add a user: compute SHA-256 of their password and add a new entry.
+  const USERS = {
+    'admin':   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', // admin123
+    'forlith': '81c01fc50ca668e68571ff1a4728f528f321a90b29bd7283f77c897c4703be0a', // forlith2026
+  };
+
+  const SESSION_KEY = 'rfm_auth';
+
+  async function sha256(str) {
+    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function showApp(user) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').style.display = '';
+    document.getElementById('logged-user-label').textContent = user;
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-user').focus();
+  }
+
+  // Check existing session
+  const saved = sessionStorage.getItem(SESSION_KEY);
+  if (saved && USERS[saved]) {
+    showApp(saved);
+  } else {
+    document.getElementById('login-user').focus();
+  }
+
+  // Login form submit
+  document.getElementById('login-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn  = document.getElementById('login-btn');
+    const err  = document.getElementById('login-error');
+    const user = document.getElementById('login-user').value.trim().toLowerCase();
+    const pass = document.getElementById('login-pass').value;
+
+    btn.disabled = true; btn.textContent = 'Verificando…';
+    err.style.display = 'none'; err.classList.remove('shake');
+
+    const hash = await sha256(pass);
+    if (USERS[user] && USERS[user] === hash) {
+      sessionStorage.setItem(SESSION_KEY, user);
+      showApp(user);
+    } else {
+      err.style.display = 'block';
+      void err.offsetWidth; // reflow to restart animation
+      err.classList.add('shake');
+    }
+    btn.disabled = false; btn.textContent = 'Entrar';
+  });
+
+  // Toggle password visibility
+  document.getElementById('toggle-pass').addEventListener('click', function () {
+    const inp = document.getElementById('login-pass');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  });
+
+  // Logout button
+  document.getElementById('logout-btn').addEventListener('click', logout);
+})();
+
+// ── Client Detail Panel ──────────────────────────────────────
+let _cpChart = null;
+function openClientPanel(r) {
+  const SEG_COLORS_MAP = {A:'#1a3a6e',B:'#2e6fad',C:'#4a9fd4',D:'#74c4e8',E:'#9ad4b0',G:'#e8a042',I:'#d95f5f',J:'#c4384d',K:'#7b1c2e'};
+  document.getElementById('cp-name').textContent  = r.cliente;
+  const badge = document.getElementById('cp-badge');
+  badge.textContent = r.segmento;
+  badge.style.background = SEG_COLORS_MAP[r.seg] || '#555';
+  document.getElementById('cp-freq').textContent   = r.frequencia + ' contratos';
+  document.getElementById('cp-valor').textContent  = 'R$ ' + (r.valor/1e6).toFixed(1) + 'M';
+  document.getElementById('cp-ultima').textContent = r.ultima_data;
+  // RFM bars
+  document.getElementById('cp-rbar').style.width   = (r.R/5*100)+'%';
+  document.getElementById('cp-rscore').textContent = r.R;
+  document.getElementById('cp-fbar').style.width   = (r.F/5*100)+'%';
+  document.getElementById('cp-fscore').textContent = r.F;
+  document.getElementById('cp-mbar').style.width   = (r.M/5*100)+'%';
+  document.getElementById('cp-mscore').textContent = r.M;
+  // History chart
+  const hist = CLIENT_HISTORY[r.cliente] || {};
+  const anos = Object.keys(hist).sort();
+  const ganhos    = anos.map(a => hist[a].g);
+  const perdidos  = anos.map(a => hist[a].p);
+  const cancelados= anos.map(a => hist[a].ca);
+  const ctx = document.getElementById('cp-chart').getContext('2d');
+  if (_cpChart) _cpChart.destroy();
+  _cpChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: anos,
+      datasets: [
+        { label:'Ganhos',    data:ganhos,    backgroundColor:'#2e6fad', borderRadius:3, stack:'s' },
+        { label:'Perdidos',  data:perdidos,  backgroundColor:'#e8a042', borderRadius:3, stack:'s' },
+        { label:'Cancelados',data:cancelados,backgroundColor:'#c4384d', borderRadius:3, stack:'s' }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8892a4',font:{size:10}}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#8892a4',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#8892a4',font:{size:10}},stacked:true}
+      }
+    }
+  });
+  document.getElementById('cpanel').classList.add('open');
+  document.getElementById('cpanel-overlay').classList.add('open');
+}
+function closeClientPanel() {
+  document.getElementById('cpanel').classList.remove('open');
+  document.getElementById('cpanel-overlay').classList.remove('open');
+}
+document.getElementById('cpanel-close').addEventListener('click', closeClientPanel);
+document.getElementById('cpanel-overlay').addEventListener('click', closeClientPanel);
+
+// Event delegation for clickable table rows (avoids JSON-in-HTML escaping issue)
+document.getElementById('tableBody').addEventListener('click', function(e) {
+  const tr = e.target.closest('tr[data-idx]');
+  if (!tr) return;
+  const idx = parseInt(tr.dataset.idx);
+  if (!isNaN(idx) && filtered[idx]) openClientPanel(filtered[idx]);
+});
+
+// ── Análise Avançada Charts ───────────────────────────────────
+function buildAnaliseCharts() {
+  const SEG_COLORS_MAP = {A:'#1a3a6e',B:'#2e6fad',C:'#4a9fd4',D:'#74c4e8',E:'#9ad4b0',G:'#e8a042',I:'#d95f5f',J:'#c4384d',K:'#7b1c2e'};
+
+  // ── Compute avg R, F, M per segment from RAW_DATA
+  const segRFM = {};
+  RAW_DATA.forEach(c => {
+    if (!segRFM[c.seg]) segRFM[c.seg] = {r:0,f:0,m:0,n:0};
+    segRFM[c.seg].r += c.R; segRFM[c.seg].f += c.F; segRFM[c.seg].m += c.M; segRFM[c.seg].n++;
+  });
+  const segsAll = Object.keys(segRFM).sort();
+  segsAll.forEach(s => { const d=segRFM[s]; d.r=+(d.r/d.n).toFixed(2); d.f=+(d.f/d.n).toFixed(2); d.m=+(d.m/d.n).toFixed(2); });
+
+  // ── Radar segment filter buttons
+  const filterDiv = document.getElementById('radar-seg-filters');
+  let activeSegs = new Set(segsAll);
+  segsAll.forEach(s => {
+    const btn = document.createElement('button');
+    btn.textContent = s + ' ' + SEG_NAMES[s].split(' ')[0];
+    btn.style.cssText = `background:${SEG_COLORS_MAP[s]};border:none;color:#fff;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;opacity:1;font-family:inherit`;
+    btn.addEventListener('click', () => {
+      if (activeSegs.has(s)) { activeSegs.delete(s); btn.style.opacity='0.3'; }
+      else { activeSegs.add(s); btn.style.opacity='1'; }
+      updateRadar();
+    });
+    filterDiv.appendChild(btn);
+  });
+
+  // ── Radar Chart
+  const radarCtx = document.getElementById('radarChart').getContext('2d');
+  let radarChart = new Chart(radarCtx, {
+    type:'radar',
+    data:{ labels:['Recência (R)','Frequência (F)','Valor (M)'], datasets:[] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8892a4',font:{size:10},boxWidth:12}}},
+      scales:{r:{
+        min:0, max:5, ticks:{stepSize:1,color:'#8892a4',font:{size:9},backdropColor:'transparent'},
+        grid:{color:'rgba(255,255,255,.08)'}, pointLabels:{color:'#e8eaf0',font:{size:11,weight:'600'}}
+      }}
+    }
+  });
+  function updateRadar() {
+    radarChart.data.datasets = segsAll.filter(s=>activeSegs.has(s)).map(s => ({
+      label: s + ' — ' + SEG_NAMES[s],
+      data: [segRFM[s].r, segRFM[s].f, segRFM[s].m],
+      borderColor: SEG_COLORS_MAP[s], backgroundColor: SEG_COLORS_MAP[s]+'33',
+      borderWidth:2, pointRadius:3
+    }));
+    radarChart.update();
+  }
+  updateRadar();
+
+  // ── Bubble Chart (value vs frequency, size = count)
+  const bubCtx = document.getElementById('bubbleChart').getContext('2d');
+  new Chart(bubCtx, {
+    type:'bubble',
+    data:{
+      datasets: segsAll.map(s => {
+        const d = segRFM[s]; const si = SUMMARY.find(x=>x.seg===s)||{};
+        return {
+          label: s + ' — ' + SEG_NAMES[s],
+          data:[{x:+(d.f).toFixed(1), y:+(d.m).toFixed(1), r: Math.max(5,Math.min(30, (si.count||1)*0.5))}],
+          backgroundColor: SEG_COLORS_MAP[s]+'aa', borderColor: SEG_COLORS_MAP[s], borderWidth:1.5
+        };
+      })
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8892a4',font:{size:10},boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>{const s=segsAll[ctx.datasetIndex];return `${SEG_NAMES[s]} · F=${ctx.raw.x} M=${ctx.raw.y} · ${SUMMARY.find(x=>x.seg===s)?.count||'?'} clientes`;}}}
+      },
+      scales:{
+        x:{title:{display:true,text:'Frequência média (F)',color:'#8892a4',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#8892a4'}},
+        y:{title:{display:true,text:'Score de Valor (M)',color:'#8892a4',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#8892a4'}}
+      }
+    }
+  });
+
+  // ── Temporal Chart
+  const anos = TEMPORAL_DATA.anos;
+  const tempCtx = document.getElementById('temporalChart').getContext('2d');
+  const tempChart = new Chart(tempCtx, {
+    type:'line',
+    data:{
+      labels: anos,
+      datasets:[
+        { label:'Ganhos',    data:TEMPORAL_DATA.ganhos,    borderColor:'#4a9fd4', backgroundColor:'rgba(74,159,212,.15)', fill:true, tension:.35, borderWidth:2.5, pointRadius:4 },
+        { label:'Perdidos',  data:TEMPORAL_DATA.perdidos,  borderColor:'#e8a042', backgroundColor:'rgba(232,160,66,.10)', fill:true, tension:.35, borderWidth:2.5, pointRadius:4 },
+        { label:'Cancelados',data:TEMPORAL_DATA.cancelados,borderColor:'#c4384d', backgroundColor:'rgba(196,56,77,.12)', fill:true, tension:.35, borderWidth:2.5, pointRadius:4 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#8892a4',font:{size:11},boxWidth:12}},
+        tooltip:{mode:'index',intersect:false}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#8892a4'}},
+        y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#8892a4'},title:{display:true,text:'Nº de contratos',color:'#8892a4',font:{size:10}}}
+      },
+      interaction:{mode:'index',intersect:false}
+    }
+  });
+  // Checkbox toggles
+  ['ganhos','perdidos','cancelados'].forEach((key,i) => {
+    document.getElementById('chk-'+key).addEventListener('change', function() {
+      tempChart.data.datasets[i].hidden = !this.checked;
+      tempChart.update();
+    });
+  });
+}
