@@ -197,12 +197,16 @@ function renderCancelTable() {
 function applyCancelFilters() {
   const search = (document.getElementById('cancelSearch') ? document.getElementById('cancelSearch').value : '').toLowerCase();
   const filt   = document.getElementById('cancelFilter') ? document.getElementById('cancelFilter').value : '';
+  const minT   = parseInt(document.getElementById('cancelMinT') ? document.getElementById('cancelMinT').value : '') || 0;
+  const year   = document.getElementById('cancelYear') ? document.getElementById('cancelYear').value : '';
   cancelFiltered = CANCEL_DATA.filter(function(r) {
     if (search && r.c.toLowerCase().indexOf(search) === -1) return false;
     if (filt === '100' && r.pct !== 100) return false;
     if (filt === '50'  && r.pct < 50)   return false;
     if (filt === '1'   && r.ca === 0)   return false;
     if (filt === '0'   && r.pct !== 0)  return false;
+    if (minT > 0 && r.t < minT) return false;
+    if (year && !(CLIENT_HISTORY[r.c] && CLIENT_HISTORY[r.c][year])) return false;
     return true;
   });
   const key = cancelSortKey;
@@ -234,15 +238,33 @@ function switchTab(name) {
     window._declineReady = true;
     document.getElementById('declineSearch').addEventListener('input', applyDeclineFilters);
     document.getElementById('declineFilter').addEventListener('change', applyDeclineFilters);
+    document.getElementById('declineMinT').addEventListener('change', applyDeclineFilters);
+    document.getElementById('declineYear').addEventListener('change', applyDeclineFilters);
     applyDeclineFilters();
   }
 }
 
 // ── Cancelamentos charts (lazy — só renderiza quando a aba é aberta)
 function buildCancelCharts() {
+  // Populate year selects from CLIENT_HISTORY
+  const _years = Array.from(new Set(
+    Object.values(CLIENT_HISTORY).flatMap(function(yrs) { return Object.keys(yrs); })
+  )).sort();
+  ['cancelYear', 'declineYear'].forEach(function(id) {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    _years.forEach(function(y) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      sel.appendChild(opt);
+    });
+  });
+
   // Tabela por cliente
   document.getElementById('cancelSearch').addEventListener('input', applyCancelFilters);
   document.getElementById('cancelFilter').addEventListener('change', applyCancelFilters);
+  document.getElementById('cancelMinT').addEventListener('change', applyCancelFilters);
+  document.getElementById('cancelYear').addEventListener('change', applyCancelFilters);
   applyCancelFilters();
 
   // Donut: Ganhos vs Cancelado vs Perdemos vs Declinamos
@@ -352,12 +374,16 @@ function renderDeclineTable() {
 function applyDeclineFilters() {
   const search = (document.getElementById('declineSearch') ? document.getElementById('declineSearch').value : '').toLowerCase();
   const filt   = document.getElementById('declineFilter') ? document.getElementById('declineFilter').value : '';
+  const minT   = parseInt(document.getElementById('declineMinT') ? document.getElementById('declineMinT').value : '') || 0;
+  const year   = document.getElementById('declineYear') ? document.getElementById('declineYear').value : '';
   declineFiltered = DECLINE_DATA.clientes.filter(function(r) {
     if (search && r.c.toLowerCase().indexOf(search) === -1) return false;
     if (filt === '100' && r.pct !== 100) return false;
     if (filt === '50'  && r.pct < 50)   return false;
     if (filt === '1'   && r.de === 0)   return false;
     if (filt === '0'   && r.pct !== 0)  return false;
+    if (minT > 0 && r.t < minT) return false;
+    if (year && !(CLIENT_HISTORY[r.c] && CLIENT_HISTORY[r.c][year])) return false;
     return true;
   });
   const key = declineSortKey;
