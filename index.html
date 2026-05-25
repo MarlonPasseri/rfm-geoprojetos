@@ -61,6 +61,7 @@
     <button class="tab-btn active" id="btn-rfm" onclick="switchTab('rfm')">Dashboard RFM</button>
     <button class="tab-btn" id="btn-analise" onclick="switchTab('analise')">Análise Avançada</button>
   <button class="tab-btn" id="btn-cancelamentos" onclick="switchTab('cancelamentos')">Análise de Cancelamentos</button>
+  <button class="tab-btn" id="btn-declinio" onclick="switchTab('declinio')">Análise de Declínios</button>
   </div>
 
   <div id="tab-rfm" class="tab-panel active">
@@ -416,6 +417,173 @@
 
   <div class="footer">ForLith Systems &nbsp;·&nbsp; Análise de Cancelamentos &nbsp;·&nbsp; Base: março/2026 &nbsp;·&nbsp; 566 clientes considerados</div>
 </div><!-- /tab-cancelamentos -->
+
+<!-- ── Análise de Declínios ───────────────────────── -->
+<div id="tab-declinio" class="tab-panel">
+
+  <!-- ═══ LINHA 1: TODO O PERÍODO ═══ -->
+  <div class="period-label"><span>Todo o período</span></div>
+  <div class="cancel-grid">
+
+    <div class="panel">
+      <div class="panel-title">Total de declinamos</div>
+      <div class="card-big-num" style="color:#e8a042">131</div>
+      <div class="card-pct-row">
+        <span class="card-pct" style="color:#e8a042">7,8%</span>
+        <span style="font-size:11px;color:var(--muted)">dos contratos — excl. negociação</span>
+      </div>
+      <div class="card-pct-row">
+        <span class="card-pct" style="color:#d4863a;font-size:18px">9,1%</span>
+        <span style="font-size:11px;color:var(--muted)">sobre total de perdidos</span>
+      </div>
+      <div class="card-base">Base: <strong style="color:var(--text)">1.682 contratos</strong><br>Todos os contratos — excl. negociação</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Top 3 clientes com + declínios</div>
+      <div class="top3-row">
+        <span class="top3-rank">#1</span>
+        <span class="top3-name">ARTERIS - AUTOPISTA LITORAL SUL</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:100%;background:#e8a042"></div></div>
+        <span class="top3-val" style="color:#e8a042">7</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#2</span>
+        <span class="top3-name">VALE</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:85.7%;background:#e8a042"></div></div>
+        <span class="top3-val" style="color:#e8a042">6</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#3</span>
+        <span class="top3-name">ENEL</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:71.4%;background:#e8a042"></div></div>
+        <span class="top3-val" style="color:#e8a042">5</span>
+      </div>
+      <div class="card-base">Nº de propostas declinadas por cliente<br>em todo o período</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Top 3 clientes com + % declínio</div>
+      <div class="top3-row">
+        <span class="top3-rank">#1</span>
+        <span class="top3-name">ARTERIS</span>
+        <span class="top3-pct-badge" style="background:rgba(232,160,66,.2);color:#e8a042">100%</span>
+        <span class="top3-sub">3/3</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#2</span>
+        <span class="top3-name">GERDAU</span>
+        <span class="top3-pct-badge" style="background:rgba(232,160,66,.2);color:#e8a042">66,7%</span>
+        <span class="top3-sub">2/3</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#3</span>
+        <span class="top3-name">ARTERIS - AUTOPISTA LITORAL SUL</span>
+        <span class="top3-pct-badge" style="background:rgba(232,160,66,.15);color:#d4863a">46,7%</span>
+        <span class="top3-sub">7/15</span>
+      </div>
+      <div class="card-base">% sobre nº de GPs — excluindo em negociação<br>(mín. 3 propostas consideradas)</div>
+    </div>
+  </div>
+
+  <!-- ═══ LINHA 2: 2024-2025 ═══ -->
+  <div class="period-label"><span>Últimos 2 anos inteiros — 2024 e 2025</span></div>
+  <div class="cancel-grid">
+
+    <div class="panel">
+      <div class="panel-title">Total de declinamos</div>
+      <div class="card-big-num" style="color:#e8a042">34</div>
+      <div class="card-pct-row">
+        <span class="card-pct" style="color:#e8a042">11,4%</span>
+        <span style="font-size:11px;color:var(--muted)">dos contratos — excl. negociação</span>
+      </div>
+      <div class="card-pct-row">
+        <span class="card-pct" style="color:#d4863a;font-size:18px">13,1%</span>
+        <span style="font-size:11px;color:var(--muted)">sobre total de perdidos</span>
+      </div>
+      <div class="card-base">Base: <strong style="color:var(--text)">298 contratos</strong><br>Todos os contratos 2024–2025 — excl. negociação</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Top 3 clientes com + declínios</div>
+      <div class="top3-row">
+        <span class="top3-rank">#1</span>
+        <span class="top3-name">ENEL</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:100%;background:#e8a042"></div></div>
+        <span class="top3-val" style="color:#e8a042">2</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#2</span>
+        <span class="top3-name">ECORODOVIAS</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:100%;background:#e8a042"></div></div>
+        <span class="top3-val" style="color:#e8a042">2</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#3</span>
+        <span class="top3-name">INB - INDÚSTRIAS NUCLEARES DO BRASIL</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:100%;background:#e8a042"></div></div>
+        <span class="top3-val" style="color:#e8a042">2</span>
+      </div>
+      <div class="card-base">Nº de propostas declinadas por cliente<br>em 2024 e 2025</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Top 3 clientes com + % declínio</div>
+      <div class="top3-row">
+        <span class="top3-rank">#1</span>
+        <span class="top3-name">ENEL</span>
+        <span class="top3-pct-badge" style="background:rgba(232,160,66,.2);color:#e8a042">66,7%</span>
+        <span class="top3-sub">2/3</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#2</span>
+        <span class="top3-name">INB - INDÚSTRIAS NUCLEARES</span>
+        <span class="top3-pct-badge" style="background:rgba(232,160,66,.2);color:#e8a042">50%</span>
+        <span class="top3-sub">2/4</span>
+      </div>
+      <div class="top3-row">
+        <span class="top3-rank">#3</span>
+        <span class="top3-name">AGIS</span>
+        <span class="top3-pct-badge" style="background:rgba(232,160,66,.15);color:#d4863a">33,3%</span>
+        <span class="top3-sub">2/6</span>
+      </div>
+      <div class="card-base">% sobre nº de GPs — excluindo em negociação<br>(mín. 3 propostas consideradas)</div>
+    </div>
+  </div>
+
+  <!-- Tabela por cliente -->
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-title">% de Declínio por Cliente</div>
+    <div class="controls">
+      <input type="text" id="declineSearch" placeholder="🔍  Buscar cliente...">
+      <select id="declineFilter">
+        <option value="">Todos</option>
+        <option value="100">100% — só declinados</option>
+        <option value="50">≥ 50%</option>
+        <option value="1">Tem algum declínio</option>
+        <option value="0">0% — nenhum declínio</option>
+      </select>
+      <span class="count-info" id="declineCount">566 clientes</span>
+    </div>
+    <div class="table-wrap">
+      <table id="declineTable">
+        <thead>
+          <tr>
+            <th onclick="declineSortTable('c')">Cliente ↕</th>
+            <th onclick="declineSortTable('t')" style="text-align:center">Total ↕</th>
+            <th onclick="declineSortTable('de')" style="text-align:center;color:#e8a042">Declinamos ↕</th>
+            <th onclick="declineSortTable('p')" style="text-align:center">Perdidos ↕</th>
+            <th onclick="declineSortTable('pct')" style="text-align:center">% Declínio ↕</th>
+          </tr>
+        </thead>
+        <tbody id="declineTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">ForLith Systems &nbsp;·&nbsp; Análise de Declínios &nbsp;·&nbsp; Base: março/2026 &nbsp;·&nbsp; 566 clientes considerados</div>
+</div><!-- /tab-declinio -->
+
 <!-- ── Análise Avançada ──────────────────────────── -->
 <div id="tab-analise" class="tab-panel">
 

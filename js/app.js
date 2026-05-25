@@ -230,6 +230,12 @@ function switchTab(name) {
     window._cancelChartsReady = true;
     buildCancelCharts();
   }
+  if (name === 'declinio' && !window._declineReady) {
+    window._declineReady = true;
+    document.getElementById('declineSearch').addEventListener('input', applyDeclineFilters);
+    document.getElementById('declineFilter').addEventListener('change', applyDeclineFilters);
+    applyDeclineFilters();
+  }
 }
 
 // ── Cancelamentos charts (lazy — só renderiza quando a aba é aberta)
@@ -312,4 +318,60 @@ function buildCancelCharts() {
       }
     }
   });
+}
+
+// ── Decline tab
+let declineFiltered = [...DECLINE_DATA.clientes];
+let declineSortKey = 'pct';
+let declineSortDir = -1;
+
+function pctDeclineColor(pct) {
+  if (pct === 0)   return '#4a9fd4';
+  if (pct <= 25)   return '#9ad4b0';
+  if (pct <= 50)   return '#e8a042';
+  if (pct < 100)   return '#d4863a';
+  return '#c4384d';
+}
+
+function renderDeclineTable() {
+  const tbody = document.getElementById('declineTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = declineFiltered.slice(0, 600).map(r => {
+    const col = pctDeclineColor(r.pct);
+    return '<tr>' +
+      '<td>' + r.c + '</td>' +
+      '<td style="text-align:center;font-weight:600">' + r.t + '</td>' +
+      '<td style="text-align:center;font-weight:700;color:#e8a042">' + r.de + '</td>' +
+      '<td style="text-align:center">' + r.p + '</td>' +
+      '<td style="text-align:center"><span class="badge" style="background:' + col + ';min-width:52px;display:inline-block;text-align:center">' + r.pct + '%</span></td>' +
+      '</tr>';
+  }).join('');
+  document.getElementById('declineCount').textContent = declineFiltered.length + ' clientes';
+}
+
+function applyDeclineFilters() {
+  const search = (document.getElementById('declineSearch') ? document.getElementById('declineSearch').value : '').toLowerCase();
+  const filt   = document.getElementById('declineFilter') ? document.getElementById('declineFilter').value : '';
+  declineFiltered = DECLINE_DATA.clientes.filter(function(r) {
+    if (search && r.c.toLowerCase().indexOf(search) === -1) return false;
+    if (filt === '100' && r.pct !== 100) return false;
+    if (filt === '50'  && r.pct < 50)   return false;
+    if (filt === '1'   && r.de === 0)   return false;
+    if (filt === '0'   && r.pct !== 0)  return false;
+    return true;
+  });
+  const key = declineSortKey;
+  const dir = declineSortDir;
+  declineFiltered.sort(function(a, b) {
+    if (a[key] < b[key]) return dir;
+    if (a[key] > b[key]) return -dir;
+    return 0;
+  });
+  renderDeclineTable();
+}
+
+function declineSortTable(key) {
+  if (declineSortKey === key) { declineSortDir *= -1; }
+  else { declineSortKey = key; declineSortDir = (key === 'c') ? 1 : -1; }
+  applyDeclineFilters();
 }
