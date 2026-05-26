@@ -472,7 +472,7 @@ document.getElementById('declineTableBody').addEventListener('click', function(e
 });
 
 // ── Análise GUI tab — GUI_DATA e GUI_SUMMARY vêm de js/gui-data.js
-let guiFiltered = [...GUI_DATA];
+let guiFiltered = (typeof GUI_DATA !== 'undefined') ? [...GUI_DATA] : [];
 let guiSortKey = 't';
 let guiSortDir = -1;
 
