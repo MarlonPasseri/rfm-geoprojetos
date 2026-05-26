@@ -180,7 +180,7 @@ function renderCancelTable() {
   if (!tbody) return;
   tbody.innerHTML = cancelFiltered.slice(0, 600).map(r => {
     const col = pctColor(r.pct);
-    return '<tr>' +
+    return '<tr class="clickable">' +
       '<td>' + r.c + '</td>' +
       '<td style="text-align:center;font-weight:600">' + r.t + '</td>' +
       '<td style="text-align:center;font-weight:700;color:#c4384d">' + r.ca + '</td>' +
@@ -368,7 +368,7 @@ function renderDeclineTable() {
   if (!tbody) return;
   tbody.innerHTML = declineFiltered.slice(0, 600).map(r => {
     const col = pctDeclineColor(r.pct);
-    return '<tr>' +
+    return '<tr class="clickable">' +
       '<td>' + r.c + '</td>' +
       '<td style="text-align:center;font-weight:600">' + r.t + '</td>' +
       '<td style="text-align:center;font-weight:700;color:#e8a042">' + r.de + '</td>' +
@@ -409,6 +409,61 @@ function declineSortTable(key) {
   else { declineSortKey = key; declineSortDir = (key === 'c') ? 1 : -1; }
   applyDeclineFilters();
 }
+
+// ── History modal (cancel + decline tables)
+let _histChart = null;
+const _HIST_ANOS = ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+
+function openHistoryModal(clientName) {
+  document.getElementById('hist-name').textContent = clientName;
+  const hist = CLIENT_HISTORY[clientName] || {};
+  const ganhos   = _HIST_ANOS.map(function(a) { return hist[a] ? hist[a].g : 0; });
+  const perdidos = _HIST_ANOS.map(function(a) { return hist[a] ? hist[a].p : 0; });
+  const ctx = document.getElementById('hist-chart').getContext('2d');
+  if (_histChart) _histChart.destroy();
+  _histChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: _HIST_ANOS,
+      datasets: [
+        { label: 'Ganhos',   data: ganhos,   backgroundColor: '#2e6fad', borderRadius: 4, borderWidth: 0 },
+        { label: 'Perdidos', data: perdidos, backgroundColor: '#c4384d', borderRadius: 4, borderWidth: 0 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#8892a4', font: { size: 11 }, boxWidth: 12, padding: 14 } } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#8892a4' } },
+        y: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#8892a4' }, beginAtZero: true }
+      }
+    }
+  });
+  document.getElementById('hist-overlay').classList.add('open');
+  document.getElementById('hist-modal').classList.add('open');
+}
+
+function closeHistoryModal() {
+  document.getElementById('hist-overlay').classList.remove('open');
+  document.getElementById('hist-modal').classList.remove('open');
+}
+
+document.getElementById('hist-close').addEventListener('click', closeHistoryModal);
+document.getElementById('hist-overlay').addEventListener('click', closeHistoryModal);
+
+document.getElementById('cancelTableBody').addEventListener('click', function(e) {
+  const tr = e.target.closest('tr');
+  if (!tr) return;
+  const name = tr.children[0] && tr.children[0].textContent.trim();
+  if (name) openHistoryModal(name);
+});
+
+document.getElementById('declineTableBody').addEventListener('click', function(e) {
+  const tr = e.target.closest('tr');
+  if (!tr) return;
+  const name = tr.children[0] && tr.children[0].textContent.trim();
+  if (name) openHistoryModal(name);
+});
 
 // ── Análise GUI tab
 let guiFiltered = [...GUI_DATA];
