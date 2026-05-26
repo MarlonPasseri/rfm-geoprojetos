@@ -247,6 +247,12 @@ function switchTab(name) {
     document.getElementById('guiSearch').addEventListener('input', applyGuiFilters);
     document.getElementById('guiFilter').addEventListener('change', applyGuiFilters);
     document.getElementById('guiMinT').addEventListener('change', applyGuiFilters);
+    document.getElementById('guiTableBody').addEventListener('click', function(e) {
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const name = tr.children[0] && tr.children[0].textContent.trim();
+      if (name) openHistoryModal(name);
+    });
     buildGuiSummary();
     applyGuiFilters();
   }
@@ -465,7 +471,25 @@ document.getElementById('declineTableBody').addEventListener('click', function(e
   if (name) openHistoryModal(name);
 });
 
-// ── Análise GUI tab
+// ── Análise GUI tab — build data from CLIENT_HISTORY (2016-2025)
+const _GUI_ANOS = ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+const GUI_DATA = (function() {
+  const rows = [];
+  Object.keys(CLIENT_HISTORY).forEach(function(name) {
+    const yrs = CLIENT_HISTORY[name];
+    let g = 0, p = 0;
+    _GUI_ANOS.forEach(function(a) { if (yrs[a]) { g += yrs[a].g; p += yrs[a].p; } });
+    if (g + p > 0) rows.push({ c: name, g: g, p: p, t: g + p });
+  });
+  rows.sort(function(a, b) { return b.t - a.t; });
+  return rows;
+})();
+const GUI_SUMMARY = (function() {
+  let g = 0, p = 0;
+  GUI_DATA.forEach(function(r) { g += r.g; p += r.p; });
+  return { clientes: GUI_DATA.length, total: g + p, ganhos: g, perdidos: p };
+})();
+
 let guiFiltered = [...GUI_DATA];
 let guiSortKey = 't';
 let guiSortDir = -1;
@@ -487,7 +511,7 @@ function renderGuiTable() {
   const tbody = document.getElementById('guiTableBody');
   if (!tbody) return;
   tbody.innerHTML = guiFiltered.map(function(r) {
-    return '<tr>' +
+    return '<tr class="clickable">' +
       '<td style="font-weight:500;max-width:420px;overflow:hidden;text-overflow:ellipsis">' + guiEscape(r.c) + '</td>' +
       '<td style="text-align:center;font-weight:700">' + r.t + '</td>' +
       '<td style="text-align:center;font-weight:700;color:#4a9fd4">' + r.g + '</td>' +
