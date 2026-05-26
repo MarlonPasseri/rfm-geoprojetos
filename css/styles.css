@@ -276,19 +276,20 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,24
 
 /* ── Left panel: white form ── */
 .login-left {
-  width: 420px; flex-shrink: 0;
-  background: #fff;
+  flex: 0 0 420px; width: 420px; max-width: 420px;
+  background: #fff; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   padding: 60px 52px;
 }
-.login-left-inner { width: 100%; }
+.login-left-inner { width: 100%; min-width: 0; }
 .login-logo {
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 52px;
 }
 .login-logo img {
-  width: 34px; height: 34px; border-radius: 8px;
-  object-fit: cover;
+  width: 34px !important; height: 34px !important;
+  max-width: 34px; max-height: 34px;
+  border-radius: 8px; object-fit: cover; flex-shrink: 0;
 }
 .login-logo-name { font-size: 13px; font-weight: 700; color: #111; letter-spacing: 0.1px; }
 .login-heading {
