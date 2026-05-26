@@ -471,25 +471,7 @@ document.getElementById('declineTableBody').addEventListener('click', function(e
   if (name) openHistoryModal(name);
 });
 
-// ── Análise GUI tab — build data from CLIENT_HISTORY (2016-2025)
-const _GUI_ANOS = ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
-const GUI_DATA = (function() {
-  const rows = [];
-  Object.keys(CLIENT_HISTORY).forEach(function(name) {
-    const yrs = CLIENT_HISTORY[name];
-    let g = 0, p = 0;
-    _GUI_ANOS.forEach(function(a) { if (yrs[a]) { g += yrs[a].g; p += yrs[a].p; } });
-    if (g + p > 0) rows.push({ c: name, g: g, p: p, t: g + p });
-  });
-  rows.sort(function(a, b) { return b.t - a.t; });
-  return rows;
-})();
-const GUI_SUMMARY = (function() {
-  let g = 0, p = 0;
-  GUI_DATA.forEach(function(r) { g += r.g; p += r.p; });
-  return { clientes: GUI_DATA.length, total: g + p, ganhos: g, perdidos: p };
-})();
-
+// ── Análise GUI tab — GUI_DATA e GUI_SUMMARY vêm de js/gui-data.js
 let guiFiltered = [...GUI_DATA];
 let guiSortKey = 't';
 let guiSortDir = -1;
