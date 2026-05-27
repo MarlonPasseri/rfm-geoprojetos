@@ -17,6 +17,22 @@
   --grad-green: linear-gradient(135deg, #22d3a0, #4f8ef7);
   --glow: 0 0 0 1px rgba(99,162,255,0.18), 0 4px 24px rgba(79,142,247,0.1);
   --glow-lg: 0 0 0 1px rgba(99,162,255,0.22), 0 8px 40px rgba(79,142,247,0.18);
+  --chart-grid: rgba(255,255,255,.05);
+  --chart-tick: #8892a4;
+}
+[data-theme="light"] {
+  --bg:  #f0f4f8;
+  --bg2: #f5f7fa;
+  --bg3: #ffffff;
+  --bg4: #edf1f7;
+  --border: rgba(0,0,0,0.09);
+  --border-glow: rgba(79,142,247,0.35);
+  --text: #111827;
+  --muted: #6b7280;
+  --glow: 0 0 0 1px rgba(79,142,247,0.15), 0 4px 24px rgba(79,142,247,0.06);
+  --glow-lg: 0 0 0 1px rgba(79,142,247,0.2), 0 8px 40px rgba(79,142,247,0.10);
+  --chart-grid: rgba(0,0,0,.07);
+  --chart-tick: #6b7280;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -30,8 +46,18 @@ body {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.35); }
+
+/* Light theme overrides for hardcoded rgba */
+[data-theme="light"] tbody td { border-bottom-color: rgba(0,0,0,0.04); }
+[data-theme="light"] tbody tr:nth-child(even) td { background: rgba(0,0,0,0.018); }
+[data-theme="light"] tbody tr:nth-child(even):hover td { background: rgba(79,142,247,0.07); }
+[data-theme="light"] .stat-row { border-bottom-color: rgba(0,0,0,0.06); }
+[data-theme="light"] .kpi-pct-base { border-top-color: var(--border); }
+[data-theme="light"] .cpanel { box-shadow: -8px 0 40px rgba(0,0,0,.12); }
+[data-theme="light"] .hist-modal { box-shadow: var(--glow-lg), 0 24px 80px rgba(0,0,0,.15); }
+[data-theme="light"] .mtip { background: #fff; box-shadow: var(--glow-lg); }
 
 .page { max-width: 1320px; margin: 0 auto; padding: 28px 24px; }
 
@@ -509,3 +535,13 @@ tbody tr.clickable:hover td { background:rgba(79,142,247,0.08) !important; }
   transition:border-color .15s, color .15s;
 }
 .hist-modal-close:hover { color:var(--text);border-color:var(--border-glow);background:rgba(79,142,247,0.07); }
+
+/* ── Theme toggle button ── */
+.theme-toggle-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 7px; padding: 6px 9px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, color .15s, background .15s;
+  flex-shrink: 0;
+}
+.theme-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
