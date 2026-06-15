@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +9,18 @@
 <link rel="stylesheet" href="css/styles.css">
 <script>
   (function(){
+    var v=localStorage.getItem('rfm-ui-version');
+    if(v!=='apple-1'){
+      localStorage.setItem('rfm-theme','light');
+      localStorage.setItem('rfm-ui-version','apple-1');
+    }
     var t=localStorage.getItem('rfm-theme');
     if(t) document.documentElement.setAttribute('data-theme',t);
   })();
 </script>
 </head>
 <body>
+<canvas id="geo-bg" class="geo-bg-canvas" aria-hidden="true"></canvas>
 <!-- ── Login Screen ────────────────────────────────── -->
 <div id="login-screen">
   <!-- Painel esquerdo: formulário -->
@@ -121,7 +127,7 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
-      <div class="header-badge">Geoprojtos BI</div>
+      <div class="header-badge">Geoprojetos BI</div>
       <span id="logged-user-label" style="font-size:11px;color:var(--muted)"></span>
       <button class="theme-toggle-btn" id="theme-toggle" title="Alternar tema" onclick="toggleTheme()">
         <svg id="theme-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -866,6 +872,8 @@
 <script src="lib/chart.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/gui-data.js"></script>
+<script src="js/visuals.js"></script>
+<script src="js/ux.js"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
 <script>
@@ -880,13 +888,17 @@ function _updateThemeIcon(dark) {
 
 function _updateChartsTheme(dark) {
   if (typeof Chart === 'undefined') return;
-  var gridColor = dark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.07)';
-  var tickColor = dark ? '#8892a4' : '#6b7280';
+  var styles = getComputedStyle(document.documentElement);
+  var gridColor = styles.getPropertyValue('--chart-grid').trim() || (dark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.07)');
+  var tickColor = styles.getPropertyValue('--chart-tick').trim() || (dark ? '#8892a4' : '#6b7280');
+  var textColor = styles.getPropertyValue('--text').trim() || tickColor;
   Object.values(Chart.instances).forEach(function(chart) {
     var scales = chart.options.scales || {};
     Object.values(scales).forEach(function(s) {
       if (s.grid)  s.grid.color  = gridColor;
       if (s.ticks) s.ticks.color = tickColor;
+      if (s.title) s.title.color = tickColor;
+      if (s.pointLabels) s.pointLabels.color = textColor;
     });
     var leg = chart.options.plugins && chart.options.plugins.legend;
     if (leg && leg.labels) leg.labels.color = tickColor;
@@ -918,7 +930,7 @@ if (_origSwitchTab) {
 (function(){
   var dark = document.documentElement.getAttribute('data-theme') !== 'light';
   _updateThemeIcon(dark);
-  if (!dark) setTimeout(function(){ _updateChartsTheme(false); }, 100);
+  setTimeout(function(){ _updateChartsTheme(dark); }, 100);
 })();
 </script>
 </body>
