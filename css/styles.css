@@ -2385,6 +2385,8 @@ thead th {
 
 /* Client panel should be temporary, not a persistent side rail */
 .cpanel-overlay {
+  position: fixed !important;
+  inset: 0 !important;
   display: block;
   background: rgba(0, 0, 0, .46);
   opacity: 0;
@@ -2400,8 +2402,9 @@ thead th {
 }
 
 .cpanel {
-  top: 0;
-  right: 0;
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
   width: min(420px, calc(100vw - 32px));
   height: 100vh;
   max-width: none;
@@ -2416,7 +2419,7 @@ thead th {
 }
 
 .cpanel.open {
-  right: 0;
+  right: 0 !important;
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
