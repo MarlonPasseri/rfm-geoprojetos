@@ -21,7 +21,7 @@
 
   function logout() {
     sessionStorage.removeItem(SESSION_KEY);
-    document.body.classList.remove('cpanel-open');
+    if (typeof closeClientPanel === 'function') closeClientPanel();
     document.getElementById('app').style.display = 'none';
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('login-user').value = '';
@@ -126,6 +126,9 @@ function closeClientPanel() {
 }
 document.getElementById('cpanel-close').addEventListener('click', closeClientPanel);
 document.getElementById('cpanel-overlay').addEventListener('click', closeClientPanel);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeClientPanel();
+});
 
 // Event delegation for clickable table rows (avoids JSON-in-HTML escaping issue)
 document.getElementById('tableBody').addEventListener('click', function(e) {

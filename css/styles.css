@@ -2376,3 +2376,78 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Client panel should be temporary, not a persistent side rail */
+.cpanel-overlay {
+  display: block;
+  background: rgba(0, 0, 0, .46);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+
+.cpanel-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.cpanel {
+  top: 24px;
+  right: 24px;
+  width: min(420px, calc(100vw - 32px));
+  height: calc(100vh - 48px);
+  max-width: none;
+  border-radius: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(calc(100% + 32px));
+  transition:
+    transform .28s cubic-bezier(.2,.8,.2,1),
+    opacity .2s ease,
+    visibility .2s ease;
+}
+
+.cpanel.open {
+  right: 24px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.cpanel.open {
+  animation: none;
+}
+
+@media (min-width: 1500px) {
+  body.cpanel-open .page {
+    max-width: min(1380px, calc(100vw - 56px));
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.cpanel-open .cpanel-overlay {
+    display: block;
+  }
+
+  body.cpanel-open .cpanel {
+    width: min(420px, calc(100vw - 32px));
+  }
+}
+
+@media (max-width: 720px) {
+  .cpanel {
+    top: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    transform: translateX(100%);
+  }
+
+  .cpanel.open {
+    right: 0;
+    transform: translateX(0);
+  }
+}
