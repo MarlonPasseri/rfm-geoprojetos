@@ -2274,6 +2274,12 @@ body {
   scrollbar-width: thin;
 }
 
+.table-wrap thead th,
+thead th {
+  position: static !important;
+  top: auto !important;
+}
+
 .kpi-row,
 .grid2,
 .grid3,
@@ -2394,12 +2400,12 @@ body {
 }
 
 .cpanel {
-  top: 24px;
-  right: 24px;
+  top: 0;
+  right: 0;
   width: min(420px, calc(100vw - 32px));
-  height: calc(100vh - 48px);
+  height: 100vh;
   max-width: none;
-  border-radius: 24px;
+  border-radius: 0;
   opacity: 0;
   visibility: hidden;
   transform: translateX(calc(100% + 32px));
@@ -2410,10 +2416,14 @@ body {
 }
 
 .cpanel.open {
-  right: 24px;
+  right: 0;
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
+}
+
+body.cpanel-open {
+  overflow: hidden;
 }
 
 .cpanel.open {

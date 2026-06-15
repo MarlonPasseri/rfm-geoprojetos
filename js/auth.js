@@ -73,6 +73,8 @@
 // ── Client Detail Panel ──────────────────────────────────────
 let _cpChart = null;
 function openClientPanel(r) {
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
   const SEG_COLORS_MAP = {A:'#1a3a6e',B:'#2e6fad',C:'#4a9fd4',D:'#74c4e8',E:'#9ad4b0',G:'#e8a042',I:'#d95f5f',J:'#c4384d',K:'#7b1c2e'};
   document.getElementById('cp-name').textContent  = r.cliente;
   const badge = document.getElementById('cp-badge');
@@ -118,6 +120,10 @@ function openClientPanel(r) {
   document.body.classList.add('cpanel-open');
   document.getElementById('cpanel').classList.add('open');
   document.getElementById('cpanel-overlay').classList.add('open');
+  window.scrollTo(scrollX, scrollY);
+  requestAnimationFrame(function() {
+    window.scrollTo(scrollX, scrollY);
+  });
 }
 function closeClientPanel() {
   document.body.classList.remove('cpanel-open');
