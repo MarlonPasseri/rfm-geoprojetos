@@ -129,6 +129,8 @@ document.getElementById('cpanel-overlay').addEventListener('click', closeClientP
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeClientPanel();
 });
+window.addEventListener('pageshow', closeClientPanel);
+closeClientPanel();
 
 // Event delegation for clickable table rows (avoids JSON-in-HTML escaping issue)
 document.getElementById('tableBody').addEventListener('click', function(e) {
