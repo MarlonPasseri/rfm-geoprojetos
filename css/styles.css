@@ -2238,3 +2238,141 @@ html[data-theme="dark"] .theme-toggle-btn {
     width: 100%;
   }
 }
+
+/* Layout stability fixes */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.page {
+  width: 100%;
+  max-width: min(1380px, calc(100vw - 56px));
+  transition: max-width .25s ease, margin .25s ease, padding .25s ease;
+}
+
+.header,
+.tab-nav {
+  min-width: 0;
+}
+
+.header-left,
+.header-left > div,
+.header > div:last-child {
+  min-width: 0;
+}
+
+.header-left h1,
+.header-left p {
+  overflow-wrap: anywhere;
+}
+
+.tab-nav {
+  scrollbar-width: thin;
+}
+
+.kpi-row,
+.grid2,
+.grid3,
+.grid3c,
+.grid-half,
+.cancel-grid {
+  min-width: 0;
+}
+
+.kpi,
+.panel,
+.compare-card {
+  min-width: 0;
+}
+
+.chart-box {
+  min-width: 0;
+}
+
+.chart-box canvas {
+  max-width: 100%;
+}
+
+.seg-row,
+.rfm-bar-row,
+.stat-row,
+.top3-row {
+  min-width: 0;
+}
+
+.cpanel {
+  width: min(420px, calc(100vw - 24px));
+  right: min(-440px, calc(-100vw + 24px));
+  max-width: 100vw;
+}
+
+.cpanel.open {
+  right: 0;
+}
+
+.cpanel-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cpanel-stat,
+.cpanel-stat-value,
+.cpanel-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 1500px) {
+  body.cpanel-open .page {
+    max-width: min(1280px, calc(100vw - 500px));
+    margin-left: max(28px, calc((100vw - 420px - min(1280px, calc(100vw - 500px))) / 2));
+    margin-right: 0;
+  }
+
+  body.cpanel-open .cpanel-overlay {
+    display: none;
+  }
+
+  body.cpanel-open .cpanel {
+    width: 420px;
+    box-shadow: -18px 0 54px rgba(0,0,0,.22);
+  }
+}
+
+@media (max-width: 1199px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    max-width: none;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .header > div:last-child {
+    flex-wrap: wrap;
+  }
+
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cpanel {
+    width: 100vw;
+    right: -100vw;
+  }
+
+  .cpanel-stats {
+    grid-template-columns: 1fr;
+  }
+}

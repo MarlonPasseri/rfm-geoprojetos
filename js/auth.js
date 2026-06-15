@@ -21,6 +21,7 @@
 
   function logout() {
     sessionStorage.removeItem(SESSION_KEY);
+    document.body.classList.remove('cpanel-open');
     document.getElementById('app').style.display = 'none';
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('login-user').value = '';
@@ -114,10 +115,12 @@ function openClientPanel(r) {
       }
     }
   });
+  document.body.classList.add('cpanel-open');
   document.getElementById('cpanel').classList.add('open');
   document.getElementById('cpanel-overlay').classList.add('open');
 }
 function closeClientPanel() {
+  document.body.classList.remove('cpanel-open');
   document.getElementById('cpanel').classList.remove('open');
   document.getElementById('cpanel-overlay').classList.remove('open');
 }
