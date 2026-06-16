@@ -286,8 +286,13 @@ function buildCancelCharts() {
   document.getElementById('cancelYear').addEventListener('change', applyCancelFilters);
   applyCancelFilters();
 
+  // Donut + barra: opcionais (o redesign da aba pode conter só a tabela).
+  const donutEl = document.getElementById('cancelDonutChart');
+  const barEl   = document.getElementById('cancelBarChart');
+  if (!donutEl || !barEl) return;
+
   // Donut: Ganhos vs Cancelado vs Perdemos vs Declinamos
-  const donutCtx = document.getElementById('cancelDonutChart').getContext('2d');
+  const donutCtx = donutEl.getContext('2d');
   new Chart(donutCtx, {
     type: 'doughnut',
     data: {
@@ -322,7 +327,7 @@ function buildCancelCharts() {
   });
 
   // Bar: breakdown perdidos com % sobre total perdidos
-  const barCtx2 = document.getElementById('cancelBarChart').getContext('2d');
+  const barCtx2 = barEl.getContext('2d');
   new Chart(barCtx2, {
     type: 'bar',
     data: {
