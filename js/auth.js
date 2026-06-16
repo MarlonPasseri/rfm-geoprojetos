@@ -73,6 +73,32 @@
 
   // Logout
   document.getElementById('logout-btn').addEventListener('click', logout);
+
+  // Atualizar: re-busca os dados do banco e re-renderiza.
+  const refreshBtn = document.getElementById('refresh-btn');
+  if (refreshBtn) {
+    const ORIGINAL = refreshBtn.textContent;
+    refreshBtn.addEventListener('click', async function () {
+      if (refreshBtn.disabled) return;
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = 'Atualizando…';
+      try {
+        await window.refreshDashboard();
+        refreshBtn.textContent = '✓ Atualizado';
+        setTimeout(function () { refreshBtn.textContent = ORIGINAL; refreshBtn.disabled = false; }, 1200);
+      } catch (e) {
+        if (e instanceof window.RfmAuthError) {
+          logout();
+          showError('Sessão expirada. Faça login novamente.');
+        } else {
+          console.error(e);
+          refreshBtn.textContent = '⚠ Erro ao atualizar';
+          setTimeout(function () { refreshBtn.textContent = ORIGINAL; }, 2000);
+        }
+        refreshBtn.disabled = false;
+      }
+    });
+  }
 })();
 
 // ── Client Detail Panel ──────────────────────────────────────
@@ -164,8 +190,14 @@ function buildAnaliseCharts() {
   const segsAll = Object.keys(segRFM).sort();
   segsAll.forEach(s => { const d=segRFM[s]; d.r=+(d.r/d.n).toFixed(2); d.f=+(d.f/d.n).toFixed(2); d.m=+(d.m/d.n).toFixed(2); });
 
+  // Destrói gráficos anteriores (idempotente p/ o botão Atualizar).
+  if (window.Chart) {
+    ['radarChart', 'bubbleChart', 'temporalChart'].forEach(id => { const ex = Chart.getChart(id); if (ex) ex.destroy(); });
+  }
+
   // ── Radar segment filter buttons
   const filterDiv = document.getElementById('radar-seg-filters');
+  filterDiv.innerHTML = '';
   let activeSegs = new Set(segsAll);
   segsAll.forEach(s => {
     const btn = document.createElement('button');
@@ -256,11 +288,16 @@ function buildAnaliseCharts() {
       interaction:{mode:'index',intersect:false}
     }
   });
-  // Checkbox toggles
-  ['ganhos','perdidos','cancelados'].forEach((key,i) => {
-    document.getElementById('chk-'+key).addEventListener('change', function() {
-      tempChart.data.datasets[i].hidden = !this.checked;
-      tempChart.update();
+  // Checkbox toggles — liga uma vez só; usa o gráfico vivo (pode ser recriado no Atualizar).
+  if (!window._analiseBound) {
+    window._analiseBound = true;
+    ['ganhos','perdidos','cancelados'].forEach((key,i) => {
+      document.getElementById('chk-'+key).addEventListener('change', function() {
+        const tc = window.Chart && Chart.getChart('temporalChart');
+        if (!tc) return;
+        tc.data.datasets[i].hidden = !this.checked;
+        tc.update();
+      });
     });
-  });
+  }
 }
