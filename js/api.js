@@ -173,8 +173,8 @@
     set('kpi-perdidos-val', perdidosContratos.toLocaleString('pt-BR'));
   }
 
-  // Carrega tudo em paralelo, monta os globais e inicia o dashboard.
-  window.loadDashboard = async function () {
+  // Busca todos os endpoints em paralelo e monta os globais + KPIs.
+  async function fetchAndBuild() {
     const [summary, top, matrix, clientes, temporal, historico, status] = await Promise.all([
       apiGet('/rfm/summary'),
       apiGet('/rfm/top?limit=10'),
@@ -186,7 +186,18 @@
     ]);
     buildGlobals({ summary, top, matrix, clientes, temporal, historico, status });
     updateKpis();
+  }
+
+  // Carga inicial: monta os dados e injeta o app.js.
+  window.loadDashboard = async function () {
+    await fetchAndBuild();
     await injectApp();
     repatchSwitchTab();
+  };
+
+  // Atualizar: re-busca os dados do banco e re-renderiza in-place.
+  window.refreshDashboard = async function () {
+    await fetchAndBuild();
+    if (typeof window.rerenderAll === 'function') window.rerenderAll();
   };
 })();

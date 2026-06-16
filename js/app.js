@@ -6,6 +6,13 @@
 
 // GRID: fornecido por js/api.js (window.GRID)
 
+// Render do dashboard principal (RFM). Função idempotente: destrói gráficos
+// e limpa containers antes de reconstruir, para poder ser chamada novamente
+// pelo botão "Atualizar".
+function renderMain() {
+  if (window.Chart) {
+    ['barChart', 'top10Chart'].forEach(id => { const ex = Chart.getChart(id); if (ex) ex.destroy(); });
+  }
 // ── Bar chart
 const barCtx = document.getElementById('barChart').getContext('2d');
 new Chart(barCtx, {
@@ -56,6 +63,7 @@ new Chart(t10Ctx, {
 
 // ── Seg list
 const segList = document.getElementById('segList');
+segList.innerHTML = '';
 const maxCount = Math.max(...SUMMARY.map(s=>s.count));
 SUMMARY.forEach(s => {
   segList.innerHTML += `<div class="seg-row">
@@ -68,6 +76,7 @@ SUMMARY.forEach(s => {
 
 // ── Matrix
 const grid = document.getElementById('matrixGrid');
+grid.innerHTML = '';
 const mtip = document.getElementById('mtip');
 // Y label
 const yLabel = document.createElement('div');
@@ -97,7 +106,11 @@ for(let f = 5; f >= 1; f--) {
     grid.appendChild(cell);
   }
 }
+  // tabela do RFM completo
+  applyFilters();
+}
 function moveTip(e) {
+  const mtip = document.getElementById('mtip');
   const x = e.clientX + 14, y = e.clientY - 10;
   mtip.style.left = (x + 220 > window.innerWidth ? e.clientX - 230 : x) + 'px';
   mtip.style.top = y + 'px';
@@ -157,7 +170,27 @@ function sortTable(key) {
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 document.getElementById('segFilter').addEventListener('change', applyFilters);
 
-applyFilters();
+renderMain();
+window.renderMain = renderMain;
+
+// Re-renderiza tudo com os dados atuais (usado pelo botão "Atualizar").
+// Gráficos são destruídos/recriados e listeners já estão ligados (flags _bound),
+// então é seguro chamar várias vezes.
+function rerenderAll() {
+  renderMain();
+  if (window.Chart) {
+    ['radarChart','bubbleChart','temporalChart','cancelDonutChart','cancelBarChart'].forEach(id => {
+      const ex = Chart.getChart(id); if (ex) ex.destroy();
+    });
+  }
+  window._cancelChartsReady = false;
+  window._declineReady = false;
+  window._guiReady = false;
+  window._analiseReady = false;
+  const active = document.querySelector('.tab-panel.active');
+  switchTab(active ? active.id.replace('tab-', '') : 'rfm');
+}
+window.rerenderAll = rerenderAll;
 
 
 // ── Cancel data: 566 clientes com breakdown por status
@@ -241,23 +274,29 @@ function switchTab(name) {
   }
   if (name === 'declinio' && !window._declineReady) {
     window._declineReady = true;
-    document.getElementById('declineSearch').addEventListener('input', applyDeclineFilters);
-    document.getElementById('declineFilter').addEventListener('change', applyDeclineFilters);
-    document.getElementById('declineMinT').addEventListener('change', applyDeclineFilters);
-    document.getElementById('declineYear').addEventListener('change', applyDeclineFilters);
+    if (!window._declineBound) {
+      window._declineBound = true;
+      document.getElementById('declineSearch').addEventListener('input', applyDeclineFilters);
+      document.getElementById('declineFilter').addEventListener('change', applyDeclineFilters);
+      document.getElementById('declineMinT').addEventListener('change', applyDeclineFilters);
+      document.getElementById('declineYear').addEventListener('change', applyDeclineFilters);
+    }
     applyDeclineFilters();
   }
   if (name === 'gui' && !window._guiReady) {
     window._guiReady = true;
-    document.getElementById('guiSearch').addEventListener('input', applyGuiFilters);
-    document.getElementById('guiFilter').addEventListener('change', applyGuiFilters);
-    document.getElementById('guiMinT').addEventListener('change', applyGuiFilters);
-    document.getElementById('guiTableBody').addEventListener('click', function(e) {
-      const tr = e.target.closest('tr');
-      if (!tr) return;
-      const name = tr.children[0] && tr.children[0].textContent.trim();
-      if (name) openHistoryModal(name);
-    });
+    if (!window._guiBound) {
+      window._guiBound = true;
+      document.getElementById('guiSearch').addEventListener('input', applyGuiFilters);
+      document.getElementById('guiFilter').addEventListener('change', applyGuiFilters);
+      document.getElementById('guiMinT').addEventListener('change', applyGuiFilters);
+      document.getElementById('guiTableBody').addEventListener('click', function(e) {
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const name = tr.children[0] && tr.children[0].textContent.trim();
+        if (name) openHistoryModal(name);
+      });
+    }
     buildGuiSummary();
     applyGuiFilters();
   }
@@ -265,31 +304,37 @@ function switchTab(name) {
 
 // ── Cancelamentos charts (lazy — só renderiza quando a aba é aberta)
 function buildCancelCharts() {
-  // Populate year selects from CLIENT_HISTORY
-  const _years = Array.from(new Set(
-    Object.values(CLIENT_HISTORY).flatMap(function(yrs) { return Object.keys(yrs); })
-  )).sort();
-  ['cancelYear', 'declineYear'].forEach(function(id) {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    _years.forEach(function(y) {
-      const opt = document.createElement('option');
-      opt.value = y; opt.textContent = y;
-      sel.appendChild(opt);
+  // Setup único: popular selects de ano + ligar listeners (não repetir no Atualizar).
+  if (!window._cancelBound) {
+    window._cancelBound = true;
+    const _years = Array.from(new Set(
+      Object.values(CLIENT_HISTORY).flatMap(function(yrs) { return Object.keys(yrs); })
+    )).sort();
+    ['cancelYear', 'declineYear'].forEach(function(id) {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      _years.forEach(function(y) {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        sel.appendChild(opt);
+      });
     });
-  });
+    document.getElementById('cancelSearch').addEventListener('input', applyCancelFilters);
+    document.getElementById('cancelFilter').addEventListener('change', applyCancelFilters);
+    document.getElementById('cancelMinT').addEventListener('change', applyCancelFilters);
+    document.getElementById('cancelYear').addEventListener('change', applyCancelFilters);
+  }
 
-  // Tabela por cliente
-  document.getElementById('cancelSearch').addEventListener('input', applyCancelFilters);
-  document.getElementById('cancelFilter').addEventListener('change', applyCancelFilters);
-  document.getElementById('cancelMinT').addEventListener('change', applyCancelFilters);
-  document.getElementById('cancelYear').addEventListener('change', applyCancelFilters);
+  // Tabela por cliente (re-renderizável)
   applyCancelFilters();
 
   // Donut + barra: opcionais (o redesign da aba pode conter só a tabela).
   const donutEl = document.getElementById('cancelDonutChart');
   const barEl   = document.getElementById('cancelBarChart');
   if (!donutEl || !barEl) return;
+  if (window.Chart) {
+    ['cancelDonutChart', 'cancelBarChart'].forEach(id => { const ex = Chart.getChart(id); if (ex) ex.destroy(); });
+  }
 
   // Donut: Ganhos vs Cancelado vs Perdemos vs Declinamos
   const donutCtx = donutEl.getContext('2d');
