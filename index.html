@@ -151,23 +151,23 @@
   <div class="kpi-row">
     <div class="kpi kpi-accent">
       <div class="kpi-label">Total de clientes</div>
-      <div class="kpi-value" style="color:#4a9fd4">566</div>
+      <div class="kpi-value" style="color:#4a9fd4" id="kpi-total-val">—</div>
       <div class="kpi-sub">Clientes únicos na base</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Valor total (R$)</div>
-      <div class="kpi-value">R$ 4,9 Bi</div>
+      <div class="kpi-value" id="kpi-valor-val">—</div>
       <div class="kpi-sub">Soma de contratos/propostas</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Campeões (A)</div>
-      <div class="kpi-value" style="color:#4a9fd4">47</div>
-      <div class="kpi-sub">8,3% da base · R$ 4,1 Bi</div>
+      <div class="kpi-value" style="color:#4a9fd4" id="kpi-camp-val">—</div>
+      <div class="kpi-sub" id="kpi-camp-sub">—</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Em risco / perdidos</div>
-      <div class="kpi-value" style="color:#d95f5f">199</div>
-      <div class="kpi-sub">Seg. I + J + K = 35% da base</div>
+      <div class="kpi-value" style="color:#d95f5f" id="kpi-risco-val">—</div>
+      <div class="kpi-sub" id="kpi-risco-sub">Seg. I + J + K</div>
     </div>
   </div>
 
@@ -175,22 +175,22 @@
   <div class="kpi-row" style="margin-bottom:24px">
     <div class="kpi" style="border-top:2px solid #c4384d">
       <div class="kpi-label">Cancelados / Total perdidos</div>
-      <div class="kpi-value" style="color:#c4384d">58,4%</div>
-      <div class="kpi-sub">303 de 519 clientes perdidos</div>
+      <div class="kpi-value" style="color:#c4384d" id="kpi-canctot-val">—</div>
+      <div class="kpi-sub" id="kpi-canctot-sub">—</div>
     </div>
     <div class="kpi" style="border-top:2px solid #d95f5f">
       <div class="kpi-label">Cancelados / Propostas enviadas</div>
-      <div class="kpi-value" style="color:#d95f5f">53,5%</div>
-      <div class="kpi-sub">303 de 566 clientes considerados</div>
+      <div class="kpi-value" style="color:#d95f5f" id="kpi-cancprop-val">—</div>
+      <div class="kpi-sub" id="kpi-cancprop-sub">—</div>
     </div>
     <div class="kpi" style="border-top:2px solid #4a9fd4">
       <div class="kpi-label">Contratos ganhos</div>
-      <div class="kpi-value" style="color:#4a9fd4">137</div>
+      <div class="kpi-value" style="color:#4a9fd4" id="kpi-ganhos-val">—</div>
       <div class="kpi-sub">OK Andamento + Encerrado</div>
     </div>
     <div class="kpi" style="border-top:2px solid #7b1c2e">
       <div class="kpi-label">Contratos perdidos</div>
-      <div class="kpi-value" style="color:#d95f5f">519</div>
+      <div class="kpi-value" style="color:#d95f5f" id="kpi-perdidos-val">—</div>
       <div class="kpi-sub">Cancelado + Perdemos + Declinamos</div>
     </div>
   </div>
@@ -836,11 +836,11 @@
 <!-- ── Auth ─────────────────────────────────────────── -->
 
 <script src="lib/chart.min.js"></script>
-<script src="js/data.js"></script>
-<script src="js/gui-data.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/visuals.js"></script>
 <script src="js/ux.js"></script>
-<script src="js/app.js?v=20260615-1415"></script>
+<!-- app.js é injetado por api.js após o login (precisa dos dados carregados) -->
 <script src="js/auth.js?v=20260615-1415"></script>
 <script>
 // ── Theme toggle

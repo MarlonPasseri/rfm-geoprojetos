@@ -1,26 +1,21 @@
 ﻿(function () {
-  // ── User registry (username → SHA-256 of password)
-  // To add a user: compute SHA-256 of their password and add a new entry.
-  const USERS = {
-    'admin':   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', // admin123
-    'forlith': '81c01fc50ca668e68571ff1a4728f528f321a90b29bd7283f77c897c4703be0a', // forlith2026
-  };
-
-  const SESSION_KEY = 'rfm_auth';
-
-  async function sha256(str) {
-    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  // Autenticação real contra a API da Geo (/api/auth/login) via js/api.js.
+  function showError(msg) {
+    const err = document.getElementById('login-error');
+    err.textContent = msg || 'Usuário ou senha incorretos.';
+    err.style.display = 'block';
+    void err.offsetWidth; // reflow para reiniciar a animação
+    err.classList.add('shake');
   }
 
   function showApp(user) {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app').style.display = '';
-    document.getElementById('logged-user-label').textContent = user;
+    document.getElementById('logged-user-label').textContent = user || '';
   }
 
   function logout() {
-    sessionStorage.removeItem(SESSION_KEY);
+    window.rfmAuth.clear();
     if (typeof closeClientPanel === 'function') closeClientPanel();
     document.getElementById('app').style.display = 'none';
     document.getElementById('login-screen').classList.remove('hidden');
@@ -28,45 +23,55 @@
     document.getElementById('login-pass').value = '';
     document.getElementById('login-user').focus();
   }
+  window.rfmLogout = logout;
 
-  // Check existing session
-  const saved = sessionStorage.getItem(SESSION_KEY);
-  if (saved && USERS[saved]) {
-    showApp(saved);
+  // Carrega os dados e o dashboard; em 401 volta para o login.
+  async function enterDashboard() {
+    try {
+      await window.loadDashboard();
+    } catch (e) {
+      if (e instanceof window.RfmAuthError) { logout(); showError('Sessão expirada. Faça login novamente.'); }
+      else { showError('Falha ao carregar os dados. Tente novamente.'); console.error(e); }
+    }
+  }
+
+  // Sessão existente?
+  if (window.rfmAuth.getToken()) {
+    showApp(window.rfmAuth.getUser());
+    enterDashboard();
   } else {
     document.getElementById('login-user').focus();
   }
 
-  // Login form submit
+  // Submit do login
   document.getElementById('login-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     const btn  = document.getElementById('login-btn');
     const err  = document.getElementById('login-error');
-    const user = document.getElementById('login-user').value.trim().toLowerCase();
+    const user = document.getElementById('login-user').value.trim();
     const pass = document.getElementById('login-pass').value;
 
     btn.disabled = true; btn.textContent = 'Verificando…';
     err.style.display = 'none'; err.classList.remove('shake');
 
-    const hash = await sha256(pass);
-    if (USERS[user] && USERS[user] === hash) {
-      sessionStorage.setItem(SESSION_KEY, user);
-      showApp(user);
-    } else {
-      err.style.display = 'block';
-      void err.offsetWidth; // reflow to restart animation
-      err.classList.add('shake');
+    try {
+      await window.rfmLogin(user, pass);
+      showApp(window.rfmAuth.getUser());
+      await enterDashboard();
+    } catch (e) {
+      showError(e instanceof window.RfmAuthError ? e.message : 'Falha ao conectar à API.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Entrar';
     }
-    btn.disabled = false; btn.textContent = 'Entrar';
   });
 
-  // Toggle password visibility
+  // Mostrar/ocultar senha
   document.getElementById('toggle-pass').addEventListener('click', function () {
     const inp = document.getElementById('login-pass');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   });
 
-  // Logout button
+  // Logout
   document.getElementById('logout-btn').addEventListener('click', logout);
 })();
 
